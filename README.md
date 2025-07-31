@@ -1,17 +1,23 @@
 # Azure DevOps Server MCP
 
-A Model Context Protocol (MCP) server for Azure DevOps Server/TFS that provides work item management and team project operations through Claude and other MCP-compatible clients.
+A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you are looking for the Azure DevOps Services Cloud version, please see the official [azure-devops-mcp](https://github.com/microsoft/azure-devops-mcp) from Microsoft.
 
 ## Features
 
 - **Team Projects**: List projects, get project details, and manage teams
 - **Work Items**: Create, read, update, and query work items with full field support
 - **WIQL Support**: Execute custom Work Item Query Language queries
-- **Environment-based Configuration**: Secure credential management through environment variables
 
 ## Prerequisites
 
-- Installed Python 3.10 or higher
+### Python 3.10+
+
+Ensure you have Python 3.10+ installed:
+
+```bash
+python --version
+python3 --version
+```
 
 ### Using uv (Recommended)
 
@@ -25,13 +31,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Ensure you have Python 3.10+ installed:
-
-```bash
-python --version  # Should be 3.10 or higher
-python3 --version
-```
-
 Clone the repository
 
 ```bash
@@ -41,18 +40,9 @@ echo $PWD
 
 ## Configuration
 
-### Environment Variables
-
-Set the following environment variables for your Azure DevOps Server:
-
-```bash
-export AZURE_DEVOPS_SERVER_URL="https://your-server.company.com"
-export AZURE_DEVOPS_SERVER_TOKEN="your-personal-access-token"
-export AZURE_DEVOPS_SERVER_COLLECTION="collection-name"
-export AZURE_DEVOPS_SERVER_API_VERSION="7.1-preview.3"
-```
-
 ### Personal Access Token
+
+To interact with Azure DevOps Server, you need a Personal Access Token (PAT):
 
 1. Go to your Azure DevOps Server web interface
 2. Click on user top right corner -> Security → Personal Access Tokens
@@ -91,7 +81,7 @@ Add the following mcp Server e.g for Claude Code
 
 ## Usage
 
-Once configured with Claude Code, you can use natural language to interact with your Azure DevOps Server:
+Once configured, you can use natural language to interact with your Azure DevOps Server:
 
 ### Team Projects
 
