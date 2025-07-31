@@ -11,6 +11,8 @@ A Model Context Protocol (MCP) server for Azure DevOps Server/TFS that provides 
 
 ## Prerequisites
 
+- Installed Python 3.10 or higher
+
 ### Using uv (Recommended)
 
 Install [uv](https://github.com/astral-sh/uv) for fast Python package management:
@@ -21,13 +23,13 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
 ```
 
-Ensure you have Python 3.11+ installed:
+Ensure you have Python 3.10+ installed:
 
 ```bash
-python --version  # Should be 3.11 or higher
+python --version  # Should be 3.10 or higher
+python3 --version
 ```
 
 Clone the repository
