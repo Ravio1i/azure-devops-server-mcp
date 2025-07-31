@@ -35,14 +35,8 @@ python3 --version
 Clone the repository
 
 ```bash
-git clone <repository-url>
-cd azure-devops-server-mcp
-```
-
-Install dependencies
-
-```bash
-pip install -e .
+git clone https://github.com/Ravio1i/azure-devops-server-mcp
+echo $PWD
 ```
 
 ## Configuration
@@ -52,7 +46,7 @@ pip install -e .
 Set the following environment variables for your Azure DevOps Server:
 
 ```bash
-export AZURE_DEVOPS_SERVER_URL="https://your-server.company.com/tfs"
+export AZURE_DEVOPS_SERVER_URL="https://your-server.company.com"
 export AZURE_DEVOPS_SERVER_TOKEN="your-personal-access-token"
 export AZURE_DEVOPS_SERVER_COLLECTION="collection-name"
 export AZURE_DEVOPS_SERVER_API_VERSION="7.1-preview.3"
@@ -61,16 +55,17 @@ export AZURE_DEVOPS_SERVER_API_VERSION="7.1-preview.3"
 ### Personal Access Token
 
 1. Go to your Azure DevOps Server web interface
-2. Navigate to User Settings → Personal Access Tokens
+2. Click on user top right corner -> Security → Personal Access Tokens
 3. Create a new token with the following scopes:
    - **Work Items**: Read & Write
    - **Project and Team**: Read
 
-### Claude Desktop Configuration
+### MCP Configuration
 
-Add the following to your Claude Desktop configuration file:
+Add the following mcp Server e.g for Claude Code
 
-**Using uv:**
+- Edit your environment variables in `env`
+- Adjust the path in the `args` section to point to your cloned repository
 
 ```json
 {
@@ -96,7 +91,7 @@ Add the following to your Claude Desktop configuration file:
 
 ## Usage
 
-Once configured with Claude Desktop, you can use natural language to interact with your Azure DevOps Server:
+Once configured with Claude Code, you can use natural language to interact with your Azure DevOps Server:
 
 ### Team Projects
 
