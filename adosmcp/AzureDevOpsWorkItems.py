@@ -1,0 +1,202 @@
+import logging
+from typing import List, Dict, Any, Optional
+from azure.devops.connection import Connection
+from azure.devops.v7_1.work_item_tracking.models import Wiql, WorkItem, JsonPatchOperation
+from azure.devops.exceptions import AzureDevOpsServiceError
+
+logging.basicConfig(level=logging.INFO)
+
+
+class AzureDevOpsWorkItems:
+    def __init__(self, connection: Connection):
+        self.connection = connection
+        try:
+            self.wit_client = self.connection.clients.get_work_item_tracking_client()
+            logging.info("Successfully initialized work item tracking client")
+        except Exception as e:
+            logging.error(f"Failed to initialize work item tracking client: {str(e)}")
+            raise
+
+    async def list_work_items(self, project: str, query: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        """List work items from a project with pagination support"""
+        try:
+            if not project:
+                raise ValueError("Project name is required")
+                
+            if not query:
+                # Query with TOP clause to limit results and prevent hanging
+                query = f"SELECT TOP {limit} [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType] FROM WorkItems WHERE [System.TeamProject] = '{project}' ORDER BY [System.Id] DESC"
+            
+            logging.info(f"Executing WIQL query: {query}")
+            wiql = Wiql(query=query)
+            result = self.wit_client.query_by_wiql(wiql)
+            
+            if not result.work_items:
+                logging.info(f"No work items found for project {project}")
+                return []
+            
+            # Get work item IDs from the query result
+            work_item_ids = [wi.id for wi in result.work_items]
+            logging.info(f"Found {len(work_item_ids)} work items to process")
+            
+            # Process work items in small batches to avoid URL length limits
+            batch_size = 20  # Smaller batch size to ensure stability
+            work_items = []
+            
+            for i in range(0, len(work_item_ids), batch_size):
+                batch_ids = work_item_ids[i:i + batch_size]
+                logging.info(f"Processing batch {i//batch_size + 1}: {len(batch_ids)} items")
+                try:
+                    batch_items = self.wit_client.get_work_items(ids=batch_ids, expand="Fields")
+                    work_items.extend(batch_items)
+                except Exception as batch_error:
+                    logging.error(f"Error processing batch {i//batch_size + 1}: {batch_error}")
+                    # Continue with next batch instead of failing completely
+                    continue
+            
+            return [self._serialize_work_item(wi) for wi in work_items]
+        except AzureDevOpsServiceError as e:
+            logging.error(f"Azure DevOps API error in list_work_items: {e}")
+            raise Exception(f"Failed to list work items: {str(e)}")
+        except Exception as e:
+            logging.error(f"Unexpected error in list_work_items: {e}")
+            raise Exception(f"Unexpected error listing work items: {str(e)}")
+
+    async def get_work_item(self, work_item_id: int) -> Dict[str, Any]:
+        """Get a specific work item by ID"""
+        try:
+            if not work_item_id or work_item_id <= 0:
+                raise ValueError("Valid work item ID is required")
+                
+            work_item = self.wit_client.get_work_item(id=work_item_id, expand="All")
+            return self._serialize_work_item(work_item)
+        except AzureDevOpsServiceError as e:
+            logging.error(f"Azure DevOps API error in get_work_item: {e}")
+            raise Exception(f"Failed to get work item {work_item_id}: {str(e)}")
+        except Exception as e:
+            logging.error(f"Unexpected error in get_work_item: {e}")
+            raise Exception(f"Unexpected error getting work item {work_item_id}: {str(e)}")
+
+    async def create_work_item(self, project: str, work_item_type: str, title: str, 
+                             description: Optional[str] = None, **fields) -> Dict[str, Any]:
+        """Create a new work item"""
+        try:
+            if not project:
+                raise ValueError("Project name is required")
+            if not work_item_type:
+                raise ValueError("Work item type is required")
+            if not title:
+                raise ValueError("Title is required")
+                
+            document = []
+            
+            document.append(JsonPatchOperation(
+                op="add",
+                path="/fields/System.Title",
+                value=title
+            ))
+            
+            if description:
+                document.append(JsonPatchOperation(
+                    op="add",
+                    path="/fields/System.Description",
+                    value=description
+                ))
+            
+            for field_name, field_value in fields.items():
+                if field_value:  # Only add non-empty values
+                    document.append(JsonPatchOperation(
+                        op="add",
+                        path=f"/fields/{field_name}",
+                        value=field_value
+                    ))
+            
+            work_item = self.wit_client.create_work_item(
+                document=document,
+                project=project,
+                type=work_item_type
+            )
+            
+            return self._serialize_work_item(work_item)
+        except AzureDevOpsServiceError as e:
+            logging.error(f"Azure DevOps API error in create_work_item: {e}")
+            raise Exception(f"Failed to create work item: {str(e)}")
+        except Exception as e:
+            logging.error(f"Unexpected error in create_work_item: {e}")
+            raise Exception(f"Unexpected error creating work item: {str(e)}")
+
+    async def update_work_item(self, work_item_id: int, **fields) -> Dict[str, Any]:
+        """Update an existing work item"""
+        try:
+            if not work_item_id or work_item_id <= 0:
+                raise ValueError("Valid work item ID is required")
+            if not fields:
+                raise ValueError("At least one field to update is required")
+                
+            document = []
+            
+            for field_name, field_value in fields.items():
+                if field_value:  # Only update non-empty values
+                    document.append(JsonPatchOperation(
+                        op="replace",
+                        path=f"/fields/{field_name}",
+                        value=field_value
+                    ))
+            
+            if not document:
+                raise ValueError("No valid fields provided for update")
+                
+            work_item = self.wit_client.update_work_item(
+                document=document,
+                id=work_item_id
+            )
+            
+            return self._serialize_work_item(work_item)
+        except AzureDevOpsServiceError as e:
+            logging.error(f"Azure DevOps API error in update_work_item: {e}")
+            raise Exception(f"Failed to update work item {work_item_id}: {str(e)}")
+        except Exception as e:
+            logging.error(f"Unexpected error in update_work_item: {e}")
+            raise Exception(f"Unexpected error updating work item {work_item_id}: {str(e)}")
+
+    def _serialize_work_item(self, work_item: WorkItem) -> Dict[str, Any]:
+        """Convert WorkItem to dictionary with essential fields only"""
+        try:
+            # Extract key fields safely
+            fields = work_item.fields if work_item.fields else {}
+            
+            # Get essential field values
+            title = fields.get("System.Title", "")
+            state = fields.get("System.State", "")
+            work_item_type = fields.get("System.WorkItemType", "")
+            assigned_to = fields.get("System.AssignedTo", {})
+            
+            # Handle assigned_to which can be a complex object
+            assigned_to_name = ""
+            if assigned_to:
+                if isinstance(assigned_to, dict):
+                    assigned_to_name = assigned_to.get("displayName", assigned_to.get("uniqueName", ""))
+                else:
+                    assigned_to_name = str(assigned_to)
+            
+            return {
+                "id": work_item.id,
+                "title": title,
+                "state": state,
+                "work_item_type": work_item_type,
+                "assigned_to": assigned_to_name,
+                "url": work_item.url,
+                "rev": work_item.rev
+            }
+        except Exception as e:
+            logging.error(f"Error serializing work item {work_item.id}: {e}")
+            # Return minimal info if serialization fails
+            return {
+                "id": work_item.id,
+                "title": "Error loading work item",
+                "state": "Unknown",
+                "work_item_type": "Unknown",
+                "assigned_to": "",
+                "url": work_item.url if work_item.url else "",
+                "rev": work_item.rev if work_item.rev else 0
+            }
