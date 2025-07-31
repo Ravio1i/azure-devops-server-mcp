@@ -24,8 +24,8 @@ class AzureDevOpsWorkItems:
                 raise ValueError("Project name is required")
                 
             if not query:
-                # Query with TOP clause to limit results and prevent hanging
-                query = f"SELECT TOP {limit} [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType] FROM WorkItems WHERE [System.TeamProject] = '{project}' ORDER BY [System.Id] DESC"
+                # Dynamic query that works with any project
+                query = f"SELECT [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType] FROM WorkItems WHERE [System.TeamProject] = '{project}'"
             
             logging.info(f"Executing WIQL query: {query}")
             wiql = Wiql(query=query)
@@ -35,8 +35,8 @@ class AzureDevOpsWorkItems:
                 logging.info(f"No work items found for project {project}")
                 return []
             
-            # Get work item IDs from the query result
-            work_item_ids = [wi.id for wi in result.work_items]
+            # Get work item IDs from the query result, limited to prevent hanging
+            work_item_ids = [wi.id for wi in result.work_items[:limit]]
             logging.info(f"Found {len(work_item_ids)} work items to process")
             
             # Process work items in small batches to avoid URL length limits
