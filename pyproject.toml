@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-azure-devops-server-mcp = "adosmcp.server:main"
+azure-devops-server-mcp = "adosmcp.run:main"
 
 [tool.uv]
 package = true
