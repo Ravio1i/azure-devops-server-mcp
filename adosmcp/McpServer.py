@@ -164,7 +164,7 @@ class McpServer:
                 conditions.append(f"[System.AssignedTo] = '{assigned_to}'")
             
             where_clause = " AND ".join(conditions)
-            query = f"SELECT TOP {limit} [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType], [System.ChangedDate] FROM WorkItems WHERE {where_clause} ORDER BY [System.ChangedDate] DESC"
+            query = f"SELECT [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType], [System.ChangedDate] FROM WorkItems WHERE {where_clause} ORDER BY [System.ChangedDate] DESC"
             return await self.ado_client.work_items.list_work_items(project, query, limit)
 
         # Git Repository tools
