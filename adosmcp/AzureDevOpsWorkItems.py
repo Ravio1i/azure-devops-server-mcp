@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from azure.devops.connection import Connection
 from azure.devops.v7_1.work_item_tracking.models import Wiql, WorkItem, JsonPatchOperation
-from .decorators import azure_devops_error_handler
+from .decorators import azure_devops_error_handler, rate_limit, request_size_limit
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +17,7 @@ class AzureDevOpsWorkItems:
             logging.error(f"Failed to initialize work item tracking client: {str(e)}")
             raise
 
+    @rate_limit(requests_per_minute=30)
     @azure_devops_error_handler
     async def list_work_items(self, project: str, query: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
         """List work items from a project with pagination support"""
@@ -27,7 +28,7 @@ class AzureDevOpsWorkItems:
             # Dynamic query that works with any project
             query = f"SELECT [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType] FROM WorkItems WHERE [System.TeamProject] = '{project}'"
         
-        logging.info(f"Executing WIQL query: {query}")
+        logging.info("Executing WIQL query for work items")
         wiql = Wiql(query=query)
         result = self.wit_client.query_by_wiql(wiql)
         
@@ -56,6 +57,7 @@ class AzureDevOpsWorkItems:
         
         return [self._serialize_work_item(wi) for wi in work_items]
 
+    @rate_limit(requests_per_minute=60)
     @azure_devops_error_handler
     async def get_work_item(self, work_item_id: int) -> Dict[str, Any]:
         """Get a specific work item by ID"""
@@ -65,6 +67,8 @@ class AzureDevOpsWorkItems:
         work_item = self.wit_client.get_work_item(id=work_item_id, expand="All")
         return self._serialize_work_item(work_item)
 
+    @request_size_limit(max_size_mb=5)
+    @rate_limit(requests_per_minute=20)
     @azure_devops_error_handler
     async def create_work_item(self, project: str, work_item_type: str, title: str, 
                              description: Optional[str] = None, **fields) -> Dict[str, Any]:
@@ -107,6 +111,8 @@ class AzureDevOpsWorkItems:
         
         return self._serialize_work_item(work_item)
 
+    @request_size_limit(max_size_mb=5)
+    @rate_limit(requests_per_minute=20)
     @azure_devops_error_handler
     async def update_work_item(self, work_item_id: int, **fields) -> Dict[str, Any]:
         """Update an existing work item"""
