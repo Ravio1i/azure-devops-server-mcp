@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any
 from azure.devops.connection import Connection
-from azure.devops.v7_1.git.models import GitQueryCommitsCriteria
+from azure.devops.v7_1.git.models import GitQueryCommitsCriteria, GitVersionDescriptor
 
 from .decorators import azure_devops_error_handler
 
@@ -89,14 +89,16 @@ class AzureDevOpsGitRepositories:
         if not path:
             raise ValueError("File path is required")
             
+        version_descriptor = GitVersionDescriptor(
+            version=branch,
+            version_type='branch'
+        )
+        
         item = self.git_client.get_item(
             repository_id=repository_id,
             project=project,
             path=path,
-            version_descriptor={
-                'version': branch,
-                'versionType': 'branch'
-            }
+            version_descriptor=version_descriptor
         )
         
         return self._serialize_file_item(item)
@@ -112,14 +114,16 @@ class AzureDevOpsGitRepositories:
         # Ensure limit is within reasonable bounds
         limit = min(max(limit, 1), 500)
         
+        version_descriptor = GitVersionDescriptor(
+            version=branch,
+            version_type='branch'
+        )
+        
         items = self.git_client.get_items(
             repository_id=repository_id,
             project=project,
             scope_path=path,
-            version_descriptor={
-                'version': branch,
-                'versionType': 'branch'
-            },
+            version_descriptor=version_descriptor,
             recursion_level='OneLevel'
         )
         
