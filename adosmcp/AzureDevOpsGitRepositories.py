@@ -1,6 +1,8 @@
 import logging
 from typing import List, Dict, Any
 from azure.devops.connection import Connection
+from azure.devops.v7_1.git.models import GitQueryCommitsCriteria
+
 from .decorators import azure_devops_error_handler
 
 logging.basicConfig(level=logging.INFO)
@@ -69,18 +71,11 @@ class AzureDevOpsGitRepositories:
             
         # Ensure limit is within reasonable bounds
         limit = min(max(limit, 1), 200)
-        
-        commits = self.git_client.get_commits(
-            repository_id=repository_id,
-            project=project,
-            search_criteria={
-                'itemVersion': {
-                    'version': branch,
-                    'versionType': 'branch'
-                },
-                '$top': limit
-            }
-        )
+
+
+
+        search_criteria = GitQueryCommitsCriteria(top=limit)
+        commits = self.git_client.get_commits(repository_id, search_criteria, project=project)1
         
         return [self._serialize_commit(commit) for commit in commits]
 
