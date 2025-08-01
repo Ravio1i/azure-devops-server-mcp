@@ -2,6 +2,7 @@ import logging
 from typing import List, Dict, Any
 from azure.devops.connection import Connection
 from azure.devops.exceptions import AzureDevOpsServiceError
+from .decorators import azure_devops_error_handler
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,49 +17,31 @@ class AzureDevOpsTeamProjects:
             logging.error(f"Failed to initialize team projects client: {str(e)}")
             raise
 
+    @azure_devops_error_handler
     async def list_team_projects(self) -> List[Dict[str, Any]]:
         """List all team projects in the Azure DevOps Server/TFS collection"""
-        try:
-            projects = self.core_client.get_projects()
-            
-            return [self._serialize_project(project) for project in projects]
-        except AzureDevOpsServiceError as e:
-            logging.error(f"Azure DevOps API error in list_team_projects: {e}")
-            raise Exception(f"Failed to list team projects: {str(e)}")
-        except Exception as e:
-            logging.error(f"Unexpected error in list_team_projects: {e}")
-            raise Exception(f"Unexpected error listing team projects: {str(e)}")
+        projects = self.core_client.get_projects()
+        
+        return [self._serialize_project(project) for project in projects]
 
+    @azure_devops_error_handler
     async def get_team_project(self, project_id_or_name: str) -> Dict[str, Any]:
         """Get details of a specific team project"""
-        try:
-            if not project_id_or_name:
-                raise ValueError("Project ID or name is required")
-                
-            project = self.core_client.get_project(project_id_or_name)
-            return self._serialize_project(project)
-        except AzureDevOpsServiceError as e:
-            logging.error(f"Azure DevOps API error in get_team_project: {e}")
-            raise Exception(f"Failed to get team project '{project_id_or_name}': {str(e)}")
-        except Exception as e:
-            logging.error(f"Unexpected error in get_team_project: {e}")
-            raise Exception(f"Unexpected error getting team project '{project_id_or_name}': {str(e)}")
+        if not project_id_or_name:
+            raise ValueError("Project ID or name is required")
+            
+        project = self.core_client.get_project(project_id_or_name)
+        return self._serialize_project(project)
 
+    @azure_devops_error_handler
     async def list_teams(self, project_id_or_name: str) -> List[Dict[str, Any]]:
         """List all teams in a specific project"""
-        try:
-            if not project_id_or_name:
-                raise ValueError("Project ID or name is required")
-                
-            teams = self.core_client.get_teams(project_id_or_name)
+        if not project_id_or_name:
+            raise ValueError("Project ID or name is required")
             
-            return [self._serialize_team(team) for team in teams]
-        except AzureDevOpsServiceError as e:
-            logging.error(f"Azure DevOps API error in list_teams: {e}")
-            raise Exception(f"Failed to list teams for project '{project_id_or_name}': {str(e)}")
-        except Exception as e:
-            logging.error(f"Unexpected error in list_teams: {e}")
-            raise Exception(f"Unexpected error listing teams for project '{project_id_or_name}': {str(e)}")
+        teams = self.core_client.get_teams(project_id_or_name)
+        
+        return [self._serialize_team(team) for team in teams]
 
     def _serialize_project(self, project) -> Dict[str, Any]:
         """Convert TeamProject to dictionary"""

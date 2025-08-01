@@ -166,6 +166,194 @@ class McpServer:
             where_clause = " AND ".join(conditions)
             query = f"SELECT TOP {limit} [System.Id], [System.Title], [System.State], [System.AssignedTo], [System.WorkItemType], [System.ChangedDate] FROM WorkItems WHERE {where_clause} ORDER BY [System.ChangedDate] DESC"
             return await self.ado_client.work_items.list_work_items(project, query, limit)
+
+        # Git Repository tools
+        @self.mcp.tool()
+        async def list_repositories(project: str) -> List[Dict[str, Any]]:
+            """List all Git repositories in a project
+            
+            Args:
+                project: The name of the Azure DevOps project
+            
+            Returns:
+                List of repositories with their metadata
+            """
+            return await self.ado_client.git_repositories.list_repositories(project)
+
+        @self.mcp.tool()
+        async def get_repository(project: str, repository_id: str) -> Dict[str, Any]:
+            """Get details of a specific repository
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+            
+            Returns:
+                Repository details
+            """
+            return await self.ado_client.git_repositories.get_repository(project, repository_id)
+
+        @self.mcp.tool()
+        async def list_branches(project: str, repository_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+            """List branches in a repository
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                limit: Maximum number of branches to return (default: 50, max: 200)
+            
+            Returns:
+                List of branches
+            """
+            limit = min(max(limit, 1), 200)
+            return await self.ado_client.git_repositories.list_branches(project, repository_id, limit)
+
+        @self.mcp.tool()
+        async def get_commits(project: str, repository_id: str, branch: str = "main", limit: int = 50) -> List[Dict[str, Any]]:
+            """Get commit history for a branch
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                branch: Branch name (default: main)
+                limit: Maximum number of commits to return (default: 50, max: 200)
+            
+            Returns:
+                List of commits
+            """
+            limit = min(max(limit, 1), 200)
+            return await self.ado_client.git_repositories.get_commits(project, repository_id, branch, limit)
+
+        @self.mcp.tool()
+        async def get_file_content(project: str, repository_id: str, path: str, branch: str = "main") -> Dict[str, Any]:
+            """Get content of a file from repository
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                path: Path to the file
+                branch: Branch name (default: main)
+            
+            Returns:
+                File content and metadata
+            """
+            return await self.ado_client.git_repositories.get_file_content(project, repository_id, path, branch)
+
+        @self.mcp.tool()
+        async def list_repository_items(project: str, repository_id: str, path: str = "/", 
+                                       branch: str = "main", limit: int = 100) -> List[Dict[str, Any]]:
+            """List files and folders in a repository path
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                path: Path to list (default: /)
+                branch: Branch name (default: main)
+                limit: Maximum number of items to return (default: 100, max: 500)
+            
+            Returns:
+                List of files and folders
+            """
+            limit = min(max(limit, 1), 500)
+            return await self.ado_client.git_repositories.list_items(project, repository_id, path, branch, limit)
+
+        # Pull Request tools
+        @self.mcp.tool()
+        async def list_pull_requests(project: str, repository_id: str, status: str = "active", 
+                                   limit: int = 50) -> List[Dict[str, Any]]:
+            """List pull requests in a repository
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                status: PR status filter (active, completed, abandoned, all)
+                limit: Maximum number of PRs to return (default: 50, max: 200)
+            
+            Returns:
+                List of pull requests
+            """
+            limit = min(max(limit, 1), 200)
+            return await self.ado_client.pull_requests.list_pull_requests(project, repository_id, status, limit)
+
+        @self.mcp.tool()
+        async def get_pull_request(project: str, repository_id: str, pull_request_id: int) -> Dict[str, Any]:
+            """Get details of a specific pull request
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                pull_request_id: The ID of the pull request
+            
+            Returns:
+                Pull request details including reviewers and work items
+            """
+            return await self.ado_client.pull_requests.get_pull_request(project, repository_id, pull_request_id)
+
+        @self.mcp.tool()
+        async def create_pull_request(project: str, repository_id: str, title: str, description: str,
+                                    source_branch: str, target_branch: str, 
+                                    reviewers: str = "") -> Dict[str, Any]:
+            """Create a new pull request
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                title: Title of the pull request
+                description: Description of the pull request
+                source_branch: Source branch name
+                target_branch: Target branch name
+                reviewers: Comma-separated list of reviewer emails/usernames (optional)
+            
+            Returns:
+                Created pull request details
+            """
+            reviewer_list = [r.strip() for r in reviewers.split(",")] if reviewers else None
+            return await self.ado_client.pull_requests.create_pull_request(
+                project, repository_id, title, description, source_branch, target_branch, reviewer_list
+            )
+
+        @self.mcp.tool()
+        async def get_pull_request_comments(project: str, repository_id: str, pull_request_id: int,
+                                          limit: int = 50) -> List[Dict[str, Any]]:
+            """Get comments/threads for a pull request
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                pull_request_id: The ID of the pull request
+                limit: Maximum number of comment threads to return (default: 50, max: 200)
+            
+            Returns:
+                List of comment threads
+            """
+            limit = min(max(limit, 1), 200)
+            return await self.ado_client.pull_requests.get_pull_request_comments(project, repository_id, pull_request_id, limit)
+
+        @self.mcp.tool()
+        async def update_pull_request(project: str, repository_id: str, pull_request_id: int,
+                                    title: str = "", description: str = "", status: str = "") -> Dict[str, Any]:
+            """Update a pull request
+            
+            Args:
+                project: The name of the Azure DevOps project
+                repository_id: The ID or name of the repository
+                pull_request_id: The ID of the pull request
+                title: New title (optional)
+                description: New description (optional)
+                status: New status - active, completed, abandoned (optional)
+            
+            Returns:
+                Updated pull request details
+            """
+            fields = {}
+            if title:
+                fields["title"] = title
+            if description:
+                fields["description"] = description
+            if status:
+                fields["status"] = status
+                
+            return await self.ado_client.pull_requests.update_pull_request(project, repository_id, pull_request_id, **fields)
     
     def run(self):
         self.mcp.run()

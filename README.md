@@ -7,6 +7,8 @@ A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you 
 - **Team Projects**: List projects, get project details, and manage teams
 - **Work Items**: Create, read, update, and query work items with full field support
 - **WIQL Support**: Execute custom Work Item Query Language queries
+- **Git Repositories**: List repositories, browse files, get commit history, and manage branches
+- **Pull Requests**: Create, read, update PRs, manage comments and reviews
 
 ## Prerequisites
 
@@ -49,6 +51,7 @@ To interact with Azure DevOps Server, you need a Personal Access Token (PAT):
 3. Create a new token with the following scopes:
    - **Work Items**: Read & Write
    - **Project and Team**: Read
+   - **Code**: Read & Write (for Git repositories and Pull Requests)
 
 ### MCP Configuration
 
@@ -96,6 +99,22 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - "Update work item 1234 to set state to 'In Progress'"
 - "Query all tasks assigned to john.doe@company.com in project 'MyProject'"
 
+### Git Repositories
+
+- "List all repositories in project 'MyProject'"
+- "Show me branches in repository 'MyRepo'"
+- "Get the latest 10 commits from main branch in 'MyRepo'"
+- "Show me the content of 'README.md' file from 'MyRepo'"
+- "List files in the 'src' folder of 'MyRepo'"
+
+### Pull Requests
+
+- "List active pull requests in repository 'MyRepo'"
+- "Create a PR from 'feature-branch' to 'main' with title 'Add new feature'"
+- "Show me details of pull request #42 in 'MyRepo'"
+- "Get comments on pull request #42"
+- "Update PR #42 status to completed"
+
 ### Advanced Queries
 
 - "Find all high priority bugs in 'MyProject' that are active"
@@ -116,3 +135,20 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - `create_work_item(project, work_item_type, title, ...)`: Create new work item
 - `update_work_item(work_item_id, ...)`: Update existing work item
 - `query_work_items(project, filters...)`: Query with field filters
+
+### Git Repository Tools
+
+- `list_repositories(project)`: Get all repositories in a project
+- `get_repository(project, repository_id)`: Get specific repository details
+- `list_branches(project, repository_id, limit?)`: List branches in repository
+- `get_commits(project, repository_id, branch?, limit?)`: Get commit history
+- `get_file_content(project, repository_id, path, branch?)`: Get file content
+- `list_repository_items(project, repository_id, path?, branch?, limit?)`: List files/folders
+
+### Pull Request Tools
+
+- `list_pull_requests(project, repository_id, status?, limit?)`: List pull requests
+- `get_pull_request(project, repository_id, pull_request_id)`: Get PR details
+- `create_pull_request(project, repository_id, title, description, source_branch, target_branch, reviewers?)`: Create new PR
+- `get_pull_request_comments(project, repository_id, pull_request_id, limit?)`: Get PR comments
+- `update_pull_request(project, repository_id, pull_request_id, ...)`: Update PR

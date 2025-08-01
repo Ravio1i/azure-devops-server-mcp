@@ -4,6 +4,8 @@ from azure.devops.connection import Connection
 from msrest.authentication import BasicAuthentication
 from .AzureDevOpsWorkItems import AzureDevOpsWorkItems
 from .AzureDevOpsTeamProjects import AzureDevOpsTeamProjects
+from .AzureDevOpsGitRepositories import AzureDevOpsGitRepositories
+from .AzureDevOpsPullRequests import AzureDevOpsPullRequests
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,5 +35,7 @@ class AzureDevOpsServerClient:
         # Initialize specialized clients
         self.work_items = AzureDevOpsWorkItems(self.connection)
         self.team_projects = AzureDevOpsTeamProjects(self.connection)
+        self.git_repositories = AzureDevOpsGitRepositories(self.connection)
+        self.pull_requests = AzureDevOpsPullRequests(self.connection)
         
         logging.info(f"Successfully connected to Azure DevOps Server at {self.server_url}")
