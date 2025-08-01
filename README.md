@@ -55,7 +55,7 @@ To interact with Azure DevOps Server, you need a Personal Access Token (PAT):
 
 ### MCP Configuration
 
-Add the following mcp Server e.g for Claude Code
+Add the following mcp Server, e.g for Claude Code
 
 - Edit your environment variables in `env`
 - Adjust the path in the `args` section to point to your cloned repository
