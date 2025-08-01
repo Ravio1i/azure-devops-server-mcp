@@ -4,11 +4,11 @@ A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you 
 
 ## Features
 
+- **Git Repositories**: List repositories, browse files, get commit history, and manage branches
+- **Pull Requests**: Create, read, update PRs, manage comments and reviews
 - **Team Projects**: List projects, get project details, and manage teams
 - **Work Items**: Create, read, update, and query work items with full field support
 - **WIQL Support**: Execute custom Work Item Query Language queries
-- **Git Repositories**: List repositories, browse files, get commit history, and manage branches
-- **Pull Requests**: Create, read, update PRs, manage comments and reviews
 
 ## Prerequisites
 
@@ -86,19 +86,6 @@ Add the following mcp Server e.g for Claude Code
 
 Once configured, you can use natural language to interact with your Azure DevOps Server:
 
-### Team Projects
-
-- "List all team projects"
-- "Get details for project 'MyProject'"
-- "Show me teams in the 'Development' project"
-
-### Work Items
-
-- "List recent work items from project 'MyProject'"
-- "Create a bug titled 'Login issue' in project 'WebApp'"
-- "Update work item 1234 to set state to 'In Progress'"
-- "Query all tasks assigned to john.doe@company.com in project 'MyProject'"
-
 ### Git Repositories
 
 - "List all repositories in project 'MyProject'"
@@ -115,26 +102,26 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - "Get comments on pull request #42"
 - "Update PR #42 status to completed"
 
+### Team Projects
+
+- "List all team projects"
+- "Get details for project 'MyProject'"
+- "Show me teams in the 'Development' project"
+
+### Work Items
+
+- "List recent work items from project 'MyProject'"
+- "Create a bug titled 'Login issue' in project 'WebApp'"
+- "Update work item 1234 to set state to 'In Progress'"
+- "Query all tasks assigned to john.doe@company.com in project 'MyProject'"
+
+
 ### Advanced Queries
 
 - "Find all high priority bugs in 'MyProject' that are active"
 - "Show me work items changed in the last week"
 
 ## Available Tools
-
-### Team Project Tools
-
-- `list_team_projects()`: Get all projects in the collection
-- `get_team_project(project_id_or_name)`: Get specific project details
-- `list_teams(project_id_or_name)`: List teams in a project
-
-### Work Item Tools
-
-- `list_work_items(project, query?, limit?)`: List work items with optional WIQL query
-- `get_work_item(work_item_id)`: Get specific work item details
-- `create_work_item(project, work_item_type, title, ...)`: Create new work item
-- `update_work_item(work_item_id, ...)`: Update existing work item
-- `query_work_items(project, filters...)`: Query with field filters
 
 ### Git Repository Tools
 
@@ -152,3 +139,17 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - `create_pull_request(project, repository_id, title, description, source_branch, target_branch, reviewers?)`: Create new PR
 - `get_pull_request_comments(project, repository_id, pull_request_id, limit?)`: Get PR comments
 - `update_pull_request(project, repository_id, pull_request_id, ...)`: Update PR
+
+### Team Project Tools
+
+- `list_team_projects()`: Get all projects in the collection
+- `get_team_project(project_id_or_name)`: Get specific project details
+- `list_teams(project_id_or_name)`: List teams in a project
+
+### Work Item Tools
+
+- `list_work_items(project, query?, limit?)`: List work items with optional WIQL query
+- `get_work_item(work_item_id)`: Get specific work item details
+- `create_work_item(project, work_item_type, title, ...)`: Create new work item
+- `update_work_item(work_item_id, ...)`: Update existing work item
+- `query_work_items(project, filters...)`: Query with field filters
