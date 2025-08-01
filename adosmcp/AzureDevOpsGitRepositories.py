@@ -163,20 +163,20 @@ class AzureDevOpsGitRepositories:
     def _serialize_commit(self, commit) -> Dict[str, Any]:
         """Convert GitCommitRef to dictionary"""
         return {
-            "commit_id": commit.commit_id,
+            "commit_id": getattr(commit, 'commit_id', None),
             "author": {
-                "name": commit.author.name if commit.author else None,
-                "email": commit.author.email if commit.author else None,
-                "date": commit.author.date.isoformat() if commit.author and commit.author.date else None
-            } if commit.author else None,
+                "name": getattr(commit.author, 'name', None) if hasattr(commit, 'author') and commit.author else None,
+                "email": getattr(commit.author, 'email', None) if hasattr(commit, 'author') and commit.author else None,
+                "date": commit.author.date.isoformat() if hasattr(commit, 'author') and commit.author and hasattr(commit.author, 'date') and commit.author.date else None
+            } if hasattr(commit, 'author') and commit.author else None,
             "committer": {
-                "name": commit.committer.name if commit.committer else None,
-                "email": commit.committer.email if commit.committer else None,
-                "date": commit.committer.date.isoformat() if commit.committer and commit.committer.date else None
-            } if commit.committer else None,
-            "comment": commit.comment,
-            "url": commit.url if hasattr(commit, 'url') else None,
-            "remote_url": commit.remote_url if hasattr(commit, 'remote_url') else None
+                "name": getattr(commit.committer, 'name', None) if hasattr(commit, 'committer') and commit.committer else None,
+                "email": getattr(commit.committer, 'email', None) if hasattr(commit, 'committer') and commit.committer else None,
+                "date": commit.committer.date.isoformat() if hasattr(commit, 'committer') and commit.committer and hasattr(commit.committer, 'date') and commit.committer.date else None
+            } if hasattr(commit, 'committer') and commit.committer else None,
+            "comment": getattr(commit, 'comment', None),
+            "url": getattr(commit, 'url', None),
+            "remote_url": getattr(commit, 'remote_url', None)
         }
 
     def _serialize_file_item(self, item) -> Dict[str, Any]:
