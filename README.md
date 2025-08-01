@@ -44,7 +44,7 @@ echo $PWD
 
 ### Personal Access Token
 
-To interact with Azure DevOps Server, you need a Personal Access Token (PAT):
+To interact with Azure DevOps Server, you need a Personal Access Token (PAT). **Make sure to only use this PAT with the MCP server and no other applications.**
 
 1. Go to your Azure DevOps Server web interface
 2. Click on user top right corner -> Security → Personal Access Tokens
