@@ -75,7 +75,7 @@ class AzureDevOpsGitRepositories:
 
 
         search_criteria = GitQueryCommitsCriteria(top=limit)
-        commits = self.git_client.get_commits(repository_id, search_criteria, project=project)1
+        commits = self.git_client.get_commits(repository_id, search_criteria, project=project)
         
         return [self._serialize_commit(commit) for commit in commits]
 
