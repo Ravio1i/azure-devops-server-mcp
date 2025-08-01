@@ -5,7 +5,7 @@
 This document provides security considerations for the Model Context Protocol (MCP), complementing the MCP Authorization specification. This document identifies security risks, attack vectors, and best practices specific to MCP implementations.
 The primary audience for this document includes developers implementing MCP authorization flows, MCP server operators, and security professionals evaluating MCP-based systems. This document should be read alongside the MCP Authorization specification and OAuth 2.0 security best practices.
 
-## 2. Attachs and Mitigations
+## 2. Attacks and Mitigations
 
 ### 2.1 ​Confused Deputy Problem
 
@@ -65,4 +65,8 @@ For Azure DevOps Server MCP, this was implemented by:
 - **Stateless authentication**: No session IDs are used; authentication is handled per-request via PAT tokens
 - **No session management**: The server does not maintain user sessions, eliminating session hijacking attack vectors
 - **Token-based security**: Uses Azure DevOps PAT tokens which are validated by Azure DevOps Server directly
-- **Rate limiting**: Implemented request rate limiting to prevent abuse and resource exhaustion attacks
+- **Rate limiting**: Implemented comprehensive request rate limiting:
+  - Work item listing: 30 requests/minute
+  - Work item retrieval: 60 requests/minute
+  - Work item creation: 20 requests/minute
+  - Request size limits: 5MB maximum for work item creation operations
