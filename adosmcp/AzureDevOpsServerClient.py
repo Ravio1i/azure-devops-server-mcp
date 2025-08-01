@@ -26,11 +26,13 @@ class AzureDevOpsServerClient:
                 self.server_url += '/'
             self.server_url += self.collection
         
-        logging.info(f"Using TFS URL: {self.server_url}")
+        logging.info("Connected to Azure DevOps Server")
         
         # Use standard PAT format for Azure DevOps Server
         credentials = BasicAuthentication("pat", self.token)
-        self.connection = Connection(base_url=self.server_url, creds=credentials)
+        
+        user_agent = "azure-devops-server-mcp/0.1.0 (MCP Server)"
+        self.connection = Connection(base_url=self.server_url, creds=credentials, user_agent=user_agent)
         
         # Initialize specialized clients
         self.work_items = AzureDevOpsWorkItems(self.connection)
@@ -38,4 +40,4 @@ class AzureDevOpsServerClient:
         self.git_repositories = AzureDevOpsGitRepositories(self.connection)
         self.pull_requests = AzureDevOpsPullRequests(self.connection)
         
-        logging.info(f"Successfully connected to Azure DevOps Server at {self.server_url}")
+        logging.info("Successfully initialized Azure DevOps Server client")
