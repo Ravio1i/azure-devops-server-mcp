@@ -1,7 +1,6 @@
 import logging
 from typing import List, Dict, Any
 from azure.devops.connection import Connection
-from azure.devops.exceptions import AzureDevOpsServiceError
 from .decorators import azure_devops_error_handler
 
 logging.basicConfig(level=logging.INFO)

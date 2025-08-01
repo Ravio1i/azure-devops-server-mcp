@@ -2,7 +2,6 @@ import logging
 from typing import List, Dict, Any, Optional
 from azure.devops.connection import Connection
 from azure.devops.v7_1.work_item_tracking.models import Wiql, WorkItem, JsonPatchOperation
-from azure.devops.exceptions import AzureDevOpsServiceError
 from .decorators import azure_devops_error_handler
 
 logging.basicConfig(level=logging.INFO)

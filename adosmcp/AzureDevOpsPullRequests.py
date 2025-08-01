@@ -1,8 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 from azure.devops.connection import Connection
-from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria, GitPullRequest, Comment
-from azure.devops.exceptions import AzureDevOpsServiceError
+from azure.devops.v7_1.git.models import GitPullRequestSearchCriteria
 from .decorators import azure_devops_error_handler
 
 logging.basicConfig(level=logging.INFO)
