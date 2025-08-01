@@ -60,8 +60,8 @@ class McpServer:
             Returns:
                 List of work items with their fields and metadata
             """
-            # Ensure limit is within reasonable bounds
-            limit = min(max(limit, 1), 200)
+            # Ensure limit is within reasonable bounds to prevent resource exhaustion
+            limit = min(max(limit, 1), 100)
             return await self.ado_client.work_items.list_work_items(project, query if query else None, limit)
 
         @self.mcp.tool()
@@ -151,8 +151,8 @@ class McpServer:
             Returns:
                 List of work items matching the criteria
             """
-            # Ensure limit is within reasonable bounds first
-            limit = min(max(limit, 1), 200)
+            # Ensure limit is within reasonable bounds first to prevent resource exhaustion
+            limit = min(max(limit, 1), 100)
             
             conditions = [f"[System.TeamProject] = '{project}'"]
             
@@ -205,7 +205,7 @@ class McpServer:
             Returns:
                 List of branches
             """
-            limit = min(max(limit, 1), 200)
+            limit = min(max(limit, 1), 100)
             return await self.ado_client.git_repositories.list_branches(project, repository_id, limit)
 
         @self.mcp.tool()
@@ -221,7 +221,7 @@ class McpServer:
             Returns:
                 List of commits
             """
-            limit = min(max(limit, 1), 200)
+            limit = min(max(limit, 1), 100)
             return await self.ado_client.git_repositories.get_commits(project, repository_id, branch, limit)
 
         @self.mcp.tool()
@@ -254,7 +254,7 @@ class McpServer:
             Returns:
                 List of files and folders
             """
-            limit = min(max(limit, 1), 500)
+            limit = min(max(limit, 1), 200)  # Reduced from 500 for security
             return await self.ado_client.git_repositories.list_items(project, repository_id, path, branch, limit)
 
         # Pull Request tools
@@ -272,7 +272,7 @@ class McpServer:
             Returns:
                 List of pull requests
             """
-            limit = min(max(limit, 1), 200)
+            limit = min(max(limit, 1), 100)
             return await self.ado_client.pull_requests.list_pull_requests(project, repository_id, status, limit)
 
         @self.mcp.tool()
@@ -326,7 +326,7 @@ class McpServer:
             Returns:
                 List of comment threads
             """
-            limit = min(max(limit, 1), 200)
+            limit = min(max(limit, 1), 100)
             return await self.ado_client.pull_requests.get_pull_request_comments(project, repository_id, pull_request_id, limit)
 
         @self.mcp.tool()
