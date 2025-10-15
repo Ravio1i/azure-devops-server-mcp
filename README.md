@@ -21,7 +21,7 @@ python --version
 python3 --version
 ```
 
-### Using uv (Recommended)
+### Using uvx (Recommended)
 
 Install [uv](https://github.com/astral-sh/uv) for fast Python package management:
 
@@ -31,13 +31,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Clone the repository
-
-```bash
-git clone https://github.com/Ravio1i/azure-devops-server-mcp
-echo $PWD
 ```
 
 ## Configuration
@@ -55,56 +48,60 @@ To interact with Azure DevOps Server, you need a Personal Access Token (PAT). **
 
 ### MCP Configuration
 
-Add the following mcp Server, e.g for Claude Code
+If you want to avoid putting sensitive information like the token in the config file, you can set them as environment:
 
-- Edit your environment variables in `env`
-- Adjust the path in the `args` section to point to your cloned repository
+**Linux / macOS:**
+
+You can add the following variables to your shell profile (e.g., `~/.bashrc`, `~/.zshrc`) to not have them in the config file:
+
+```bash
+export AZURE_DEVOPS_SERVER_URL="https://your-server.company.com/tfs"
+export AZURE_DEVOPS_SERVER_TOKEN="your-personal-access-token"
+export AZURE_DEVOPS_SERVER_API_VERSION="7.1-preview.3"
+export AZURE_DEVOPS_SERVER_COLLECTION="collection-name"
+```
+
+**Windows:**
+
+You can add the following variables to your system environment or user environment to not have them in the config file:
+
+```bash
+setx AZURE_DEVOPS_SERVER_URL "https://your-server.company.com/tfs"
+setx AZURE_DEVOPS_SERVER_TOKEN "your-personal-access-token"
+setx AZURE_DEVOPS_SERVER_API_VERSION "7.1-preview.3"
+setx AZURE_DEVOPS_SERVER_COLLECTION "collection-name"
+```
+
+After setting environment variables, you can use them in the MCP config like this:
 
 ```json
 {
   "mcpServers": {
     "azure-devops-server": {
-      "command": "uv",
+      "command": "uvx",
       "args": [
-        "--directory",
-        "/path/to/azure-devops-server-mcp",
-        "run", 
-        "azure-devops-server-mcp"
+        "git+https://github.com/Ravio1i/azure-devops-server-mcp.git"
       ],
-      "env": {
-        "AZURE_DEVOPS_SERVER_URL": "https://your-server.company.com/tfs",
-        "AZURE_DEVOPS_SERVER_TOKEN": "your-personal-access-token",
-        "AZURE_DEVOPS_SERVER_API_VERSION": "7.1-preview.3",
-        "AZURE_DEVOPS_SERVER_COLLECTION": "collection-name"
-      }
     }
   }
 }
 ```
-#### Windows GPT-4.1
-Add following system variables:
-        "AZURE_DEVOPS_SERVER_URL": "https://your-server.company.com/tfs",
-        "AZURE_DEVOPS_SERVER_TOKEN": "your-personal-access-token",
-        "AZURE_DEVOPS_SERVER_API_VERSION": "7.1-preview.3",
-        "AZURE_DEVOPS_SERVER_COLLECTION": "collection-name"
 
-Add C:\Users\<YourUser>\AppData\Roaming\Code\User\mcp.json with the fooling content
+For GitHub Copilot it uses `servers` instead of `mcpServers`:
 
 ```json
 {
   "servers": {
     "azure-devops-server": {
-      "command": "uv",
+      "command": "uvx",
       "args": [
-        "--directory",
-        "/path/to/azure-devops-server-mcp",
-        "run", 
-        "azure-devops-server-mcp"
+        "git+https://github.com/Ravio1i/azure-devops-server-mcp.git"
       ]
     }
   }
 }
 ```
+
 ## Usage
 
 Once configured, you can use natural language to interact with your Azure DevOps Server:
@@ -176,3 +173,39 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - `create_work_item(project, work_item_type, title, ...)`: Create new work item
 - `update_work_item(work_item_id, ...)`: Update existing work item
 - `query_work_items(project, filters...)`: Query with field filters
+
+## Development Setup
+
+Clone the repository
+
+```bash
+git clone https://github.com/Ravio1i/azure-devops-server-mcp
+echo $PWD
+```
+
+Use `uv` to run the MCP server directly from the cloned directory:
+
+- Edit your environment variables in `env`
+- Adjust the path in the `args` section to point to your cloned repository
+
+```json
+{
+  "mcpServers": {
+    "azure-devops-server": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/azure-devops-server-mcp",
+        "run", 
+        "azure-devops-server-mcp"
+      ],
+      "env": {
+        "AZURE_DEVOPS_SERVER_URL": "https://your-server.company.com/tfs",
+        "AZURE_DEVOPS_SERVER_TOKEN": "your-personal-access-token",
+        "AZURE_DEVOPS_SERVER_API_VERSION": "7.1-preview.3",
+        "AZURE_DEVOPS_SERVER_COLLECTION": "collection-name"
+      }
+    }
+  }
+}
+```
