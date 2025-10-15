@@ -81,7 +81,30 @@ Add the following mcp Server, e.g for Claude Code
   }
 }
 ```
+#### Windows GPT-4.1
+Add following system variables:
+        "AZURE_DEVOPS_SERVER_URL": "https://your-server.company.com/tfs",
+        "AZURE_DEVOPS_SERVER_TOKEN": "your-personal-access-token",
+        "AZURE_DEVOPS_SERVER_API_VERSION": "7.1-preview.3",
+        "AZURE_DEVOPS_SERVER_COLLECTION": "collection-name"
 
+Add C:\Users\<YourUser>\AppData\Roaming\Code\User\mcp.json with the fooling content
+
+```json
+{
+  "servers": {
+    "azure-devops-server": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/azure-devops-server-mcp",
+        "run", 
+        "azure-devops-server-mcp"
+      ]
+    }
+  }
+}
+```
 ## Usage
 
 Once configured, you can use natural language to interact with your Azure DevOps Server:
