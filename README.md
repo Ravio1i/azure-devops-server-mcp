@@ -12,6 +12,7 @@ A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you 
 
 ## Prerequisites
 
+
 ### Python 3.10+
 
 Ensure you have Python 3.10+ installed:
@@ -86,7 +87,7 @@ After setting environment variables, you can use them in the MCP config like thi
   }
 }
 ```
-
+see https://code.visualstudio.com/docs/copilot/customization/mcp-servers
 For GitHub Copilot it uses `servers` instead of `mcpServers`:
 
 ```json
@@ -101,6 +102,11 @@ For GitHub Copilot it uses `servers` instead of `mcpServers`:
   }
 }
 ```
+See the documentation for details: [Add an MCP server to your user configuration](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server-to-your-user-configuration)
+
+### GitHub Copilot License
+
+You need a valid GitHub Copilot or another Copilot license to use this integration.
 
 ## Usage
 
