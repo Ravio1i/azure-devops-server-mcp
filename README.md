@@ -106,7 +106,7 @@ See the documentation for details: [Add an MCP server to your user configuration
 
 ### GitHub Copilot License
 
-You need a valid GitHub Copilot license to use this integration. You can find license information and request access here: https://siemens.sharepoint.com/sites/devboost/SitePages/Home.aspx
+You need a valid GitHub Copilot or another Copilot license to use this integration.
 
 ## Usage
 
