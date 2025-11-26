@@ -5,13 +5,10 @@ Author: Josef Moser (improved, uses AzureDevOpsWorkItems.py style)
 import os
 import argparse
 import logging
-try:
-    from azure.devops.connection import Connection
-    from msrest.authentication import BasicAuthentication
-except ImportError:
-    Connection = None
-    BasicAuthentication = None
-    logging.warning("Azure DevOps SDK not installed. Falling back to REST API.")
+
+from azure.devops.connection import Connection
+from msrest.authentication import BasicAuthentication
+
 import requests
 
 
@@ -33,21 +30,7 @@ def get_test_plans_sdk(connection, project):
         return None
 
 
-def get_test_plans_rest(planet, collection, project, pat):
-    base_url = f"https://{planet}/tfs/{collection}/{project}/_apis/test/plans?includePlanDetails=true&api-version=4.0"
-    auth = requests.auth.HTTPBasicAuth('', pat)
-    response = requests.get(base_url, auth=auth)
-    response.raise_for_status()
-    plans = response.json().get('value', [])
-    return [
-        {
-            "id": plan.get('id'),
-            "name": plan.get('name'),
-            "state": plan.get('state'),
-            "updatedDate": plan.get('updatedDate')
-        }
-        for plan in plans
-    ]
+
 
 
 
@@ -77,8 +60,6 @@ def main():
         except Exception as sdk_error:
             logging.warning(f"SDK failed: {sdk_error}. Falling back to REST API.")
 
-    if plans is None:
-        plans = get_test_plans_rest(args.planet, args.collection, args.project, args.pat)
 
     # Filtering
     from datetime import datetime, timedelta
