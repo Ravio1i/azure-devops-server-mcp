@@ -10,6 +10,8 @@ A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you 
 - **Work Items**: Create, read, update, and query work items with full field support
 - **WIQL Support**: Execute custom Work Item Query Language queries
 
+- **Test Plans**: Get Testplans and TestResults of testpoints
+
 ## Prerequisites
 
 
