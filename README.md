@@ -157,7 +157,7 @@ Once configured, you can use natural language to interact with your Azure DevOps
 
 ### Git Repository Tools
 
-- `list_repositories(project,active?)`: Get all repositories in a project
+- `list_repositories(project)`: Get all repositories in a project
 - `get_repository(project, repository_id)`: Get specific repository details
 - `list_branches(project, repository_id, limit?)`: List branches in repository
 - `get_commits(project, repository_id, branch?, limit?)`: Get commit history
@@ -188,7 +188,7 @@ Once configured, you can use natural language to interact with your Azure DevOps
 
 ### Test Item Tools
 
-- `list_testplans(project)` : List Test plans
+- `list_testplans(project,active?)` : List Test plans. Optinal you can filter for active test plans
 - `get_testsuites_testpoints(project,planname,outcome?)`: Get Test suites of a specific teamproject and test plan. Optional you can filter for specific test outcome results like Failed,Passed or Unspecified
 
 ## Development Setup
