@@ -152,6 +152,7 @@ class AzureDevOpsWorkItems:
             state = fields.get("System.State", "")
             work_item_type = fields.get("System.WorkItemType", "")
             assigned_to = fields.get("System.AssignedTo", {})
+            description = fields.get("System.Description", "")
             
             # Handle assigned_to which can be a complex object
             assigned_to_name = ""
@@ -164,6 +165,7 @@ class AzureDevOpsWorkItems:
             return {
                 "id": work_item.id,
                 "title": title,
+                "description": description,
                 "state": state,
                 "work_item_type": work_item_type,
                 "assigned_to": assigned_to_name,
@@ -176,6 +178,7 @@ class AzureDevOpsWorkItems:
             return {
                 "id": work_item.id,
                 "title": "Error loading work item",
+                "description": description,
                 "state": "Unknown",
                 "work_item_type": "Unknown",
                 "assigned_to": "",
