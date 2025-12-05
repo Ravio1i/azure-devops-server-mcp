@@ -141,6 +141,52 @@ class AzureDevOpsWorkItems:
         
         return self._serialize_work_item(work_item)
 
+    @rate_limit(requests_per_minute=60)
+    @azure_devops_error_handler
+    async def get_work_item_comments(self, project: str, work_item_id: int, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get comments/discussion for a work item from its revision history"""
+        if not project:
+            raise ValueError("Project name is required")
+        if not work_item_id or work_item_id <= 0:
+            raise ValueError("Valid work item ID is required")
+        
+        try:
+            # Get work item updates/revisions which contain the discussion
+            updates = self.wit_client.get_updates(work_item_id)
+            
+            # Serialize updates with comments
+            result = []
+            for update in updates[:limit]:
+                # Check if this update has a comment (History field)
+                comment_text = ""
+                if hasattr(update, 'fields') and update.fields:
+                    history_field = update.fields.get('System.History')
+                    if history_field and hasattr(history_field, 'new_value'):
+                        comment_text = history_field.new_value
+                
+                # Only include updates that have comments/history
+                if comment_text:
+                    changed_by = ""
+                    if hasattr(update, 'revised_by') and update.revised_by:
+                        changed_by = update.revised_by.display_name if hasattr(update.revised_by, 'display_name') else str(update.revised_by)
+                    
+                    changed_date = ""
+                    if hasattr(update, 'revised_date') and update.revised_date:
+                        changed_date = update.revised_date.isoformat()
+                    
+                    result.append({
+                        "id": update.id if hasattr(update, 'id') else update.rev if hasattr(update, 'rev') else None,
+                        "text": comment_text,
+                        "created_by": changed_by,
+                        "created_date": changed_date,
+                        "revision": update.rev if hasattr(update, 'rev') else None
+                    })
+            
+            return result
+        except Exception as e:
+            logging.error(f"Error fetching comments for work item {work_item_id}: {e}")
+            return []
+
     def _serialize_work_item(self, work_item: WorkItem) -> Dict[str, Any]:
         """Convert WorkItem to dictionary with essential fields only"""
         try:
@@ -169,6 +215,7 @@ class AzureDevOpsWorkItems:
                 "state": state,
                 "work_item_type": work_item_type,
                 "assigned_to": assigned_to_name,
+                "description": description,
                 "url": work_item.url,
                 "rev": work_item.rev
             }
@@ -182,6 +229,7 @@ class AzureDevOpsWorkItems:
                 "state": "Unknown",
                 "work_item_type": "Unknown",
                 "assigned_to": "",
+                "description": "",
                 "url": work_item.url if work_item.url else "",
                 "rev": work_item.rev if work_item.rev else 0
             }

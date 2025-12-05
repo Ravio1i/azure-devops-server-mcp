@@ -137,6 +137,21 @@ class McpServer:
             return await self.ado_client.work_items.update_work_item(work_item_id, **fields)
 
         @self.mcp.tool()
+        async def get_work_item_comments(project: str, work_item_id: int, limit: int = 100) -> List[Dict[str, Any]]:
+            """Get comments/discussion for a work item
+            
+            Args:
+                project: The name of the Azure DevOps project
+                work_item_id: The ID of the work item
+                limit: Maximum number of comments to return (default: 100, max: 200)
+            
+            Returns:
+                List of comments with author and timestamps
+            """
+            limit = min(max(limit, 1), 200)
+            return await self.ado_client.work_items.get_work_item_comments(project, work_item_id, limit)
+
+        @self.mcp.tool()
         async def query_work_items(project: str, work_item_type: str = "", 
                                  state: str = "", assigned_to: str = "", limit: int = 50) -> List[Dict[str, Any]]:
             """Query work items with filters
