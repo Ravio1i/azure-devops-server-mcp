@@ -13,6 +13,133 @@ class McpServer:
         self._register_tools()
     
     def _register_tools(self):
+        # Test Suites and Test Points tool (REST API)
+        import requests
+
+        @self.mcp.tool()
+        async def get_testsuites_testpoints(project: str, plan_id: str = None, plan_name: str = None, outcome: str = None) -> Dict[str, Any]:
+            """Get all test suites and test points for a test plan in a team project using REST API
+            Args:
+                project: Team project name
+                plan_id: Test plan ID
+                plan_name: Test plan name
+                outcome: Filter testpoints by outcome (Failed, Passed, Unspecified)
+            Returns:
+                Dictionary with suites and their test points
+            """
+            import os
+            planet = os.environ.get('AZURE_DEVOPS_SERVER_URL', 'jupiter.tfs.siemens.net').replace('https://','').replace('/tfs','')
+            collection = os.environ.get('AZURE_DEVOPS_SERVER_COLLECTION', 'IPS')
+            pat = os.environ.get('AZURE_DEVOPS_SERVER_TOKEN')
+            if not pat:
+                raise ValueError("Personal Access Token (PAT) is required. Set AZURE_DEVOPS_SERVER_TOKEN.")
+            def get_test_plans(planet, collection, project, pat):
+                url = f"https://{planet}/tfs/{collection}/{project}/_apis/test/plans?includePlanDetails=true&api-version=4.0"
+                auth = requests.auth.HTTPBasicAuth('', pat)
+                response = requests.get(url, auth=auth)
+                response.raise_for_status()
+                return response.json().get('value', [])
+            def get_test_suites(planet, collection, project, plan_id, pat):
+                url = f"https://{planet}/tfs/{collection}/{project}/_apis/test/plans/{plan_id}/suites?api-version=4.0"
+                auth = requests.auth.HTTPBasicAuth('', pat)
+                response = requests.get(url, auth=auth)
+                response.raise_for_status()
+                return response.json().get('value', [])
+            def get_test_points(planet, collection, project, plan_id, suite_id, pat):
+                url = f"https://{planet}/tfs/{collection}/{project}/_apis/test/plans/{plan_id}/suites/{suite_id}/points?api-version=4.0"
+                auth = requests.auth.HTTPBasicAuth('', pat)
+                response = requests.get(url, auth=auth)
+                response.raise_for_status()
+                return response.json().get('value', [])
+            # If plan_name is given, look up its ID
+            if plan_name:
+                plans = get_test_plans(planet, collection, project, pat)
+                match = [p for p in plans if p.get('name', '').lower() == plan_name.lower()]
+                if not match:
+                    return {"error": f"Test plan with name '{plan_name}' not found in project '{project}'."}
+                plan_id = match[0].get('id')
+            if not plan_id:
+                return {"error": "Test plan ID or name must be provided."}
+            suites = get_test_suites(planet, collection, project, plan_id, pat)
+            allowed_outcomes = {"Failed", "Passed", "Unspecified"}
+            filter_outcome = outcome
+            result = {}
+            for suite in suites:
+                suite_id = suite.get('id')
+                suite_name = suite.get('name')
+                points = get_test_points(planet, collection, project, plan_id, suite_id, pat)
+                # Filter points by outcome
+                if filter_outcome:
+                    filtered_points = [point for point in points if point.get('outcome', 'Unknown') == filter_outcome]
+                else:
+                    filtered_points = [point for point in points if point.get('outcome', 'Unknown') in allowed_outcomes]
+                if filtered_points:
+                    result[suite_name] = [{
+                        "testPoint": point.get('testCase', {}).get('name', 'Unknown'),
+                        "outcome": point.get('outcome', 'Unknown')
+                    } for point in filtered_points]
+            if not result:
+                return {"message": "There are not any testsuites that fulfill the outcome condition."}
+            return result
+        # Test Plans tool
+        from azure.devops.connection import Connection
+        from msrest.authentication import BasicAuthentication
+        from datetime import datetime, timedelta
+
+        @self.mcp.tool()
+        async def list_test_plans(project: str, active: bool = False, lastdays: int = None, latest: bool = False) -> List[Dict[str, Any]]:
+            """List test plans for a specific Azure DevOps Server team project using SDK only
+            Args:
+                project: Team project name
+                active: Show only active test plans
+                lastdays: Show test plans updated in the last N days
+                latest: Show only the latest test plan
+            Returns:
+                List of test plans
+            """
+            import os
+            planet = os.environ.get('AZURE_DEVOPS_SERVER_URL', 'jupiter.tfs.siemens.net').replace('https://','').replace('/tfs','')
+            collection = os.environ.get('AZURE_DEVOPS_SERVER_COLLECTION', 'IPS')
+            pat = os.environ.get('AZURE_DEVOPS_SERVER_TOKEN')
+            if not pat:
+                raise ValueError("Personal Access Token (PAT) is required. Set AZURE_DEVOPS_SERVER_TOKEN.")
+            org_url = f"https://{planet}/tfs/{collection}"
+            credentials = BasicAuthentication('', pat)
+            connection = Connection(base_url=org_url, creds=credentials)
+            try:
+                test_client = connection.clients.get_test_plan_client()
+                plans = test_client.get_test_plans(project)
+                plans = [
+                    {
+                        "id": plan.id,
+                        "name": plan.name,
+                        "state": plan.state,
+                        "updatedDate": getattr(plan, 'updated_date', None)
+                    }
+                    for plan in plans
+                ]
+            except Exception as e:
+                import logging
+                logging.error(f"SDK error: {e}")
+                return []
+            # Filtering
+            for plan in plans:
+                if plan.get('updatedDate'):
+                    try:
+                        plan['updatedDate_dt'] = datetime.strptime(plan['updatedDate'][:19], "%Y-%m-%dT%H:%M:%S")
+                    except Exception:
+                        plan['updatedDate_dt'] = None
+                else:
+                    plan['updatedDate_dt'] = None
+            filtered_plans = plans
+            if active:
+                filtered_plans = [p for p in filtered_plans if str(p.get('state','')).lower() == 'active']
+            if lastdays:
+                cutoff = datetime.now() - timedelta(days=lastdays)
+                filtered_plans = [p for p in filtered_plans if p['updatedDate_dt'] and p['updatedDate_dt'] >= cutoff]
+            if latest and filtered_plans:
+                filtered_plans = [max(filtered_plans, key=lambda p: p['updatedDate_dt'] or datetime.min)]
+            return filtered_plans
         # Team Projects tools
         @self.mcp.tool()
         async def list_team_projects() -> List[Dict[str, Any]]:

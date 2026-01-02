@@ -9,6 +9,7 @@ A Model Context Protocol (MCP) server for Azure DevOps **Server** (TFS). If you 
 - **Team Projects**: List projects, get project details, and manage teams
 - **Work Items**: Create, read, update, and query work items with full field support
 - **WIQL Support**: Execute custom Work Item Query Language queries
+- **Test Plans**: Get Testplans, Testsuites and TestResults of testpoints
 
 ## Prerequisites
 
@@ -141,6 +142,11 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - "Update work item 1234 to set state to 'In Progress'"
 - "Query all tasks assigned to john.doe@company.com in project 'MyProject'"
 
+### Test Results
+
+- "List test plans from project 'MyProject'"
+- "Get test suites and testpoints and the result of the tests"
+
 
 ### Advanced Queries
 
@@ -179,6 +185,11 @@ Once configured, you can use natural language to interact with your Azure DevOps
 - `create_work_item(project, work_item_type, title, ...)`: Create new work item
 - `update_work_item(work_item_id, ...)`: Update existing work item
 - `query_work_items(project, filters...)`: Query with field filters
+
+### Test Item Tools
+
+- `list_testplans(project,active?)` : List Test plans. Optinal you can filter for active test plans
+- `get_testsuites_testpoints(project,planname,outcome?)`: Get Test suites of a specific teamproject and test plan. Optional you can filter for specific test outcome results like Failed,Passed or Unspecified
 
 ## Development Setup
 
