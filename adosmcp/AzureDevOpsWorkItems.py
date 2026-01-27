@@ -141,6 +141,29 @@ class AzureDevOpsWorkItems:
         
         return self._serialize_work_item(work_item)
 
+    def _extract_bug_fields(self, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract bug-specific fields from work item fields dictionary"""
+        bug_fields = {}
+        
+        # Common bug fields
+        bug_field_mappings = {
+            "Microsoft.VSTS.TCM.ReproSteps": "repro_steps",
+            "Microsoft.VSTS.TCM.SystemInfo": "system_info",
+            "Microsoft.VSTS.Common.Priority": "priority",
+            "Microsoft.VSTS.Common.Severity": "severity",
+            "Microsoft.VSTS.Common.AcceptanceCriteria": "acceptance_criteria",
+            "Microsoft.VSTS.Build.FoundIn": "found_in_build",
+            "Microsoft.VSTS.Build.IntegrationBuild": "integrated_in_build"
+        }
+        
+        # Extract fields that are present
+        for field_ref, field_key in bug_field_mappings.items():
+            value = fields.get(field_ref)
+            if value:
+                bug_fields[field_key] = value
+        
+        return bug_fields
+
     def _serialize_work_item(self, work_item: WorkItem) -> Dict[str, Any]:
         """Convert WorkItem to dictionary with essential fields only"""
         try:
@@ -162,7 +185,8 @@ class AzureDevOpsWorkItems:
                 else:
                     assigned_to_name = str(assigned_to)
             
-            return {
+            # Build base result dictionary
+            result = {
                 "id": work_item.id,
                 "title": title,
                 "description": description,
@@ -172,6 +196,13 @@ class AzureDevOpsWorkItems:
                 "url": work_item.url,
                 "rev": work_item.rev
             }
+            
+            # Add bug-specific fields if they exist
+            bug_fields = self._extract_bug_fields(fields)
+            result.update(bug_fields)
+            
+            return result
+            
         except Exception as e:
             logging.error(f"Error serializing work item {work_item.id}: {e}")
             # Return minimal info if serialization fails
