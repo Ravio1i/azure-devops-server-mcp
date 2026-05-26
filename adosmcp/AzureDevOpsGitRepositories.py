@@ -98,7 +98,8 @@ class AzureDevOpsGitRepositories:
             repository_id=repository_id,
             project=project,
             path=path,
-            version_descriptor=version_descriptor
+            version_descriptor=version_descriptor,
+            include_content=True
         )
         
         return self._serialize_file_item(item)
